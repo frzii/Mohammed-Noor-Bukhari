@@ -4,106 +4,420 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Mohammed Noor Bukhari Restaurant Bahrain | Authentic Bukhari & Grills</title>
-  <meta name="description" content="Mohammed Noor Bukhari Restaurant in Bahrain. Authentic Bukhari rice, grills, Arabic dishes and family dining across multiple branches." />
+  <title>Mohammed Noor Bukhari Restaurant Bahrain | Bukhari Rice & Arabic Grills</title>
+
+  <meta
+    name="description"
+    content="Mohammed Noor Bukhari Restaurant Bahrain. Authentic Bukhari rice, Arabic grilled chicken, Arabic grills, kabsa and family meals across Bahrain."
+  />
+
+  <meta
+    name="keywords"
+    content="Mohammed Noor Bukhari Bahrain, Bukhari rice Bahrain, Arabic grills Bahrain, Kabsa Bahrain, Mohammed Noor Restaurant, Bukhari restaurant Manama"
+  />
+
+  <meta name="theme-color" content="#8f0000" />
+
+  <meta property="og:title" content="Mohammed Noor Bukhari Restaurant Bahrain" />
+  <meta property="og:description" content="Authentic Bukhari rice, Arabic grills and kabsa favourites across Bahrain." />
+  <meta property="og:type" content="website" />
 
   <link rel="stylesheet" href="styles.css" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Restaurant",
+    "name": "Mohammed Noor Bukhari Restaurant",
+    "servesCuisine": ["Arabic", "Bukhari", "Kabsa", "Grills", "Rice"],
+    "address": {
+      "@type": "PostalAddress",
+      "addressCountry": "BH",
+      "addressLocality": "Bahrain"
+    },
+    "url": "https://linktr.ee/mnbkrest",
+    "sameAs": [
+      "https://www.talabat.com/bahrain/mohammed-noor-bukhari-hoora",
+      "https://www.tripadvisor.com/Restaurant_Review-g293997-d6737429-Reviews-Mohammed_Noor-Manama.html"
+    ]
+  }
+  </script>
 </head>
 
 <body>
-<header class="navbar">
-  <div class="brand">
-    <img src="logo.png" alt="Mohammed Noor Bukhari Restaurant Logo">
-    <div>
-      <h1 data-en="Mohammed Noor Bukhari" data-ar="مطعم محمد نور بخاري">Mohammed Noor Bukhari</h1>
-      <span data-en="Authentic Bukhari Restaurant" data-ar="مطعم بخاري أصيل">Authentic Bukhari Restaurant</span>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="#home" class="brand" aria-label="Mohammed Noor Bukhari Home">
+      <img src="logo.png" alt="Mohammed Noor Bukhari Restaurant Logo" />
+
+      <div>
+        <strong data-en="Mohammed Noor Bukhari" data-ar="مطعم محمد نور بخاري">
+          Mohammed Noor Bukhari
+        </strong>
+
+        <span data-en="Authentic Bukhari Restaurant" data-ar="مطعم بخاري أصيل">
+          Authentic Bukhari Restaurant
+        </span>
+      </div>
+    </a>
+
+    <nav class="desktop-nav">
+      <a href="#home" data-en="Home" data-ar="الرئيسية">Home</a>
+      <a href="#popular" data-en="Popular Dishes" data-ar="الأطباق المميزة">Popular Dishes</a>
+      <a href="#branches" data-en="Branches" data-ar="الفروع">Branches</a>
+      <a href="#about" data-en="About Us" data-ar="من نحن">About Us</a>
+      <a href="#contact" data-en="Contact" data-ar="تواصل معنا">Contact</a>
+    </nav>
+
+    <div class="header-actions">
+      <button class="language-btn" type="button" onclick="toggleLanguage()">
+        AR / EN
+      </button>
+
+      <button class="menu-toggle" type="button" onclick="toggleMenu()" aria-label="Open mobile menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
     </div>
   </div>
 
-  <nav>
-    <a href="#home" data-en="Home" data-ar="الرئيسية">Home</a>
-    <a href="#menu" data-en="Menu" data-ar="القائمة">Menu</a>
-    <a href="#branches" data-en="Branches" data-ar="الفروع">Branches</a>
-    <a href="#contact" data-en="Contact" data-ar="تواصل معنا">Contact</a>
+  <nav class="mobile-menu" id="mobileMenu">
+    <a href="#home" onclick="closeMenu()" data-en="Home" data-ar="الرئيسية">Home</a>
+    <a href="#popular" onclick="closeMenu()" data-en="Popular Dishes" data-ar="الأطباق المميزة">Popular Dishes</a>
+    <a href="#branches" onclick="closeMenu()" data-en="Branches" data-ar="الفروع">Branches</a>
+    <a href="#about" onclick="closeMenu()" data-en="About Us" data-ar="من نحن">About Us</a>
+    <a href="#contact" onclick="closeMenu()" data-en="Contact" data-ar="تواصل معنا">Contact</a>
   </nav>
-
-  <button class="lang-btn" onclick="toggleLanguage()">AR / EN</button>
 </header>
 
+<main>
+
 <section id="home" class="hero">
-  <div class="hero-overlay"></div>
   <div class="hero-content">
-    <p class="tagline" data-en="A Bahrain favourite for Bukhari rice & grills" data-ar="وجهة مفضلة في البحرين للأرز البخاري والمشويات">
-      A Bahrain favourite for Bukhari rice & grills
-    </p>
+    <div
+      class="hero-badge"
+      data-en="Bahrain’s Bukhari Favourite"
+      data-ar="الوجهة البخارية المفضلة في البحرين"
+    >
+      Bahrain’s Bukhari Favourite
+    </div>
 
-    <h2 data-en="Premium Bukhari Taste, Served Fresh Every Day"
-        data-ar="الطعم البخاري الفاخر يُقدم طازجاً كل يوم">
-      Premium Bukhari Taste, Served Fresh Every Day
-    </h2>
+    <h1
+      data-en="Authentic Bukhari Rice & Arabic Grills"
+      data-ar="أرز بخاري ومشويات عربية بطعم أصيل"
+    >
+      Authentic Bukhari Rice & Arabic Grills
+    </h1>
 
-    <p data-en="Experience traditional Arabic flavours, generous portions, grilled favourites and family dining across Bahrain."
-       data-ar="استمتع بالنكهات العربية الأصيلة، الوجبات السخية، المشويات المميزة وتجربة عائلية في فروعنا بالبحرين.">
-      Experience traditional Arabic flavours, generous portions, grilled favourites and family dining across Bahrain.
+    <p
+      data-en="Traditional Arabic flavour, generous portions and fresh grilled favourites served across Bahrain."
+      data-ar="نكهات عربية أصيلة، وجبات سخية، ومشويات طازجة تُقدم في فروعنا داخل البحرين."
+    >
+      Traditional Arabic flavour, generous portions and fresh grilled favourites served across Bahrain.
     </p>
 
     <div class="hero-buttons">
-      <a class="primary-btn" href="https://www.talabat.com/bahrain/mohammed-noor-bukhari-hoora" target="_blank"
-         data-en="Order Online" data-ar="اطلب الآن">Order Online</a>
-      <a class="secondary-btn" href="#branches" data-en="View Branches" data-ar="عرض الفروع">View Branches</a>
+      <a
+        class="btn btn-primary"
+        href="https://www.talabat.com/bahrain/mohammed-noor-bukhari-hoora"
+        target="_blank"
+        rel="noopener"
+        data-en="Order Now"
+        data-ar="اطلب الآن"
+      >
+        Order Now
+      </a>
+
+      <a
+        class="btn btn-outline"
+        href="#popular"
+        data-en="Explore Dishes"
+        data-ar="اكتشف الأطباق"
+      >
+        Explore Dishes
+      </a>
     </div>
   </div>
 </section>
 
-<section class="intro">
+<section class="quick-stats" aria-label="Restaurant Highlights">
   <div>
-    <h3 data-en="7+ Branches" data-ar="+7 فروع">7+ Branches</h3>
-    <p data-en="Across Bahrain" data-ar="في جميع أنحاء البحرين">Across Bahrain</p>
+    <strong data-en="7+" data-ar="+7">7+</strong>
+    <span data-en="Branches Across Bahrain" data-ar="فروع في البحرين">Branches Across Bahrain</span>
   </div>
+
   <div>
-    <h3 data-en="Bukhari Rice" data-ar="أرز بخاري">Bukhari Rice</h3>
-    <p data-en="Signature flavour" data-ar="النكهة المميزة">Signature flavour</p>
+    <strong data-en="Fresh" data-ar="طازج">Fresh</strong>
+    <span data-en="Prepared Every Day" data-ar="تحضير يومي">Prepared Every Day</span>
   </div>
+
   <div>
-    <h3 data-en="Grills & Arabic Dishes" data-ar="مشويات وأطباق عربية">Grills & Arabic Dishes</h3>
-    <p data-en="Freshly prepared" data-ar="محضرة طازجة">Freshly prepared</p>
+    <strong data-en="Family" data-ar="عائلي">Family</strong>
+    <span data-en="Dining Experience" data-ar="تجربة عائلية">Dining Experience</span>
   </div>
 </section>
 
-<section id="menu" class="section">
-  <div class="section-heading">
-    <p data-en="Our Specialties" data-ar="أطباقنا المميزة">Our Specialties</p>
-    <h2 data-en="Popular Dishes" data-ar="الأطباق الأكثر طلباً">Popular Dishes</h2>
+<section id="popular" class="premium-showcase">
+  <div class="section-intro">
+    <span data-en="Popular Dishes" data-ar="الأطباق المميزة">
+      Popular Dishes
+    </span>
+
+    <h2
+      data-en="A Premium Scroll Experience"
+      data-ar="تجربة تصفح فاخرة"
+    >
+      A Premium Scroll Experience
+    </h2>
+
+    <p
+      data-en="Scroll through signature dishes with smooth parallax movement, image morphing and premium restaurant-style presentation."
+      data-ar="تصفح الأطباق المميزة بحركة بارالاكس ناعمة وانتقالات صور فاخرة."
+    >
+      Scroll through signature dishes with smooth parallax movement, image morphing and premium restaurant-style presentation.
+    </p>
   </div>
 
-  <div class="menu-grid">
-    <div class="menu-card">
-      <img src="https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?auto=format&fit=crop&w=900&q=80" alt="Bukhari rice">
-      <h3 data-en="Bukhari Rice" data-ar="أرز بخاري">Bukhari Rice</h3>
-      <p data-en="Aromatic rice served with authentic traditional flavour." data-ar="أرز عطري بنكهة تقليدية أصيلة.">Aromatic rice served with authentic traditional flavour.</p>
+  <div class="showcase-shell">
+    <div class="showcase-copy">
+
+      <article
+        class="showcase-panel active"
+        data-theme="rice"
+        data-visual-en="Signature Bukhari Rice"
+        data-visual-ar="الأرز البخاري المميز"
+      >
+        <img
+          class="showcase-mobile-image"
+          src="https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?auto=format&fit=crop&w=1000&q=90"
+          alt="Bukhari rice"
+        />
+
+        <span data-en="Signature Dish" data-ar="طبق مميز">
+          Signature Dish
+        </span>
+
+        <h2 data-en="Bukhari Rice" data-ar="أرز بخاري">
+          Bukhari Rice
+        </h2>
+
+        <p
+          data-en="Fragrant rice cooked with warm spices and served with the authentic taste Mohammed Noor Bukhari is known for."
+          data-ar="أرز عطري مطهو بتوابل دافئة ويُقدم بالطعم الأصيل الذي يشتهر به مطعم محمد نور بخاري."
+        >
+          Fragrant rice cooked with warm spices and served with the authentic taste Mohammed Noor Bukhari is known for.
+        </p>
+
+        <a
+          href="https://www.talabat.com/bahrain/mohammed-noor-bukhari-hoora"
+          target="_blank"
+          rel="noopener"
+          data-en="Order This Dish"
+          data-ar="اطلب هذا الطبق"
+        >
+          Order This Dish
+        </a>
+      </article>
+
+      <article
+        class="showcase-panel"
+        data-theme="chicken"
+        data-visual-en="Fresh Arabic Chicken"
+        data-visual-ar="دجاج عربي طازج"
+      >
+        <img
+          class="showcase-mobile-image"
+          src="https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=1000&q=90"
+          alt="Arabic grilled chicken"
+        />
+
+        <span data-en="Fresh From The Grill" data-ar="طازج من المشوى">
+          Fresh From The Grill
+        </span>
+
+        <h2 data-en="Arabic Chicken" data-ar="دجاج عربي">
+          Arabic Chicken
+        </h2>
+
+        <p
+          data-en="Juicy grilled chicken with golden spices, rich aroma and the perfect pairing with Bukhari rice."
+          data-ar="دجاج مشوي طري بتوابل ذهبية ورائحة غنية، مثالي مع الأرز البخاري."
+        >
+          Juicy grilled chicken with golden spices, rich aroma and the perfect pairing with Bukhari rice.
+        </p>
+
+        <a
+          href="https://www.talabat.com/bahrain/mohammed-noor-bukhari-hoora"
+          target="_blank"
+          rel="noopener"
+          data-en="Order This Dish"
+          data-ar="اطلب هذا الطبق"
+        >
+          Order This Dish
+        </a>
+      </article>
+
+      <article
+        class="showcase-panel"
+        data-theme="kebab"
+        data-visual-en="Arabic Grill Selection"
+        data-visual-ar="تشكيلة مشويات عربية"
+      >
+        <img
+          class="showcase-mobile-image"
+          src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1000&q=90"
+          alt="Arabic grills"
+        />
+
+        <span data-en="Family Favourite" data-ar="المفضل للعائلة">
+          Family Favourite
+        </span>
+
+        <h2 data-en="Arabic Grills" data-ar="مشويات عربية">
+          Arabic Grills
+        </h2>
+
+        <p
+          data-en="A generous grilled selection with kabab-style flavours, smoky aroma and family sharing portions."
+          data-ar="تشكيلة مشويات سخية بنكهات الكباب ورائحة الشواء المثالية للعائلة."
+        >
+          A generous grilled selection with kabab-style flavours, smoky aroma and family sharing portions.
+        </p>
+
+        <a
+          href="https://www.talabat.com/bahrain/mohammed-noor-bukhari-hoora"
+          target="_blank"
+          rel="noopener"
+          data-en="Order This Dish"
+          data-ar="اطلب هذا الطبق"
+        >
+          Order This Dish
+        </a>
+      </article>
+
+      <article
+        class="showcase-panel"
+        data-theme="kabsa"
+        data-visual-en="Traditional Kabsa Meals"
+        data-visual-ar="وجبات كبسة تقليدية"
+      >
+        <img
+          class="showcase-mobile-image"
+          src="kabsa.png"
+          alt="Kabsa meal"
+        />
+
+        <span data-en="Traditional Taste" data-ar="طعم تقليدي">
+          Traditional Taste
+        </span>
+
+        <h2 data-en="Kabsa Meals" data-ar="وجبات الكبسة">
+          Kabsa Meals
+        </h2>
+
+        <p
+          data-en="Comforting Arabic rice meals prepared with rich flavour, tender meat and generous portions."
+          data-ar="وجبات أرز عربية غنية بالنكهة مع لحم طري وكميات سخية."
+        >
+          Comforting Arabic rice meals prepared with rich flavour, tender meat and generous portions.
+        </p>
+
+        <a
+          href="https://www.talabat.com/bahrain/mohammed-noor-bukhari-hoora"
+          target="_blank"
+          rel="noopener"
+          data-en="Order This Dish"
+          data-ar="اطلب هذا الطبق"
+        >
+          Order This Dish
+        </a>
+      </article>
+
     </div>
 
-    <div class="menu-card">
-      <img src="https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=900&q=80" alt="Grilled chicken">
-      <h3 data-en="Grilled Chicken" data-ar="دجاج مشوي">Grilled Chicken</h3>
-      <p data-en="Juicy grilled chicken prepared with house spices." data-ar="دجاج مشوي طري بتتبيلة المطعم الخاصة.">Juicy grilled chicken prepared with house spices.</p>
-    </div>
+    <aside class="showcase-visual-wrap" aria-hidden="true">
+      <div class="visual-card" id="visualCard">
 
-    <div class="menu-card">
-      <img src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=900&q=80" alt="Arabic grills">
-      <h3 data-en="Arabic Grills" data-ar="مشويات عربية">Arabic Grills</h3>
-      <p data-en="Freshly grilled favourites for family dining." data-ar="مشويات طازجة مثالية للوجبات العائلية.">Freshly grilled favourites for family dining.</p>
-    </div>
+        <!-- Falling particle layers are paused for now.
+        <div class="food-rain-layer" id="foodRain"></div>
+        <div class="food-splash-layer" id="foodSplash"></div>
+        -->
+
+        <div class="visual-orb visual-orb-one"></div>
+        <div class="visual-orb visual-orb-two"></div>
+        <div class="visual-ring visual-ring-one"></div>
+        <div class="visual-ring visual-ring-two"></div>
+
+        <div class="visual-image-frame">
+          <img
+            class="visual-dish-image active"
+            src="https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?auto=format&fit=crop&w=1100&q=90"
+            alt="Bukhari rice"
+          />
+
+          <img
+            class="visual-dish-image"
+            src="https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=1100&q=90"
+            alt="Arabic grilled chicken"
+          />
+
+          <img
+            class="visual-dish-image"
+            src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1100&q=90"
+            alt="Arabic grills"
+          />
+
+          <img
+            class="visual-dish-image"
+            src="kabsa.png"
+            alt="Kabsa meal"
+          />
+        </div>
+
+        <div class="visual-info-card">
+          <small id="visualTag">01 / 04</small>
+          <strong id="visualTitle">Signature Bukhari Rice</strong>
+          <span data-en="Scroll to explore" data-ar="مرر للاستكشاف">
+            Scroll to explore
+          </span>
+        </div>
+
+        <div class="visual-progress">
+          <span id="visualCurrent">01</span>
+          <i></i>
+          <span>04</span>
+        </div>
+
+        <div class="visual-dots" id="visualDots">
+          <button class="active" type="button" data-index="0" aria-label="View Bukhari Rice"></button>
+          <button type="button" data-index="1" aria-label="View Arabic Chicken"></button>
+          <button type="button" data-index="2" aria-label="View Arabic Grills"></button>
+          <button type="button" data-index="3" aria-label="View Kabsa Meals"></button>
+        </div>
+      </div>
+    </aside>
   </div>
 </section>
 
-<section id="branches" class="section dark">
-  <div class="section-heading">
-    <p data-en="Find Us" data-ar="زورونا">Find Us</p>
-    <h2 data-en="Branches in Bahrain" data-ar="فروعنا في البحرين">Branches in Bahrain</h2>
+<section id="branches" class="branches-section">
+  <div class="section-title light">
+    <span data-en="Near You" data-ar="بالقرب منك">Near You</span>
+
+    <h2 data-en="Branches Across Bahrain" data-ar="فروعنا في البحرين">
+      Branches Across Bahrain
+    </h2>
+
+    <p
+      data-en="Visit your nearest Mohammed Noor Bukhari branch or order online."
+      data-ar="زر أقرب فرع لمطعم محمد نور بخاري أو اطلب عبر الإنترنت."
+    >
+      Visit your nearest Mohammed Noor Bukhari branch or order online.
+    </p>
   </div>
 
-  <div class="branch-grid">
+  <div class="branches-grid">
     <div>Hoora</div>
     <div>Manama</div>
     <div>Riffa</div>
@@ -111,19 +425,106 @@
     <div>Isa Town</div>
     <div>Hamad Town</div>
     <div>Budaiya</div>
-    <div>More Branches</div>
+    <div data-en="More Branches" data-ar="فروع أخرى">More Branches</div>
   </div>
 </section>
 
-<section id="contact" class="cta">
-  <img src="logo.png" alt="Mohammed Noor Bukhari Logo">
-  <h2 data-en="Taste the Tradition Today" data-ar="تذوق الأصالة اليوم">Taste the Tradition Today</h2>
-  <p data-en="Order your favourite Bukhari meals online or visit your nearest branch."
-     data-ar="اطلب وجبتك البخارية المفضلة أو قم بزيارة أقرب فرع.">
-    Order your favourite Bukhari meals online or visit your nearest branch.
-  </p>
-  <a href="https://linktr.ee/mnbkrest" target="_blank" data-en="All Links" data-ar="جميع الروابط">All Links</a>
+<section id="about" class="about-section">
+  <div class="about-image">
+    <img
+      src="https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=1200&q=90"
+      alt="Restaurant dining table"
+    />
+  </div>
+
+  <div class="about-content">
+    <span data-en="About Us" data-ar="من نحن">About Us</span>
+
+    <h2
+      data-en="Traditional Taste, Modern Restaurant Experience"
+      data-ar="طعم تقليدي بتجربة مطعم عصرية"
+    >
+      Traditional Taste, Modern Restaurant Experience
+    </h2>
+
+    <p
+      data-en="Mohammed Noor Bukhari Restaurant brings authentic Arabic and Bukhari flavours to families across Bahrain with quality meals, fast service and generous portions."
+      data-ar="يقدم مطعم محمد نور بخاري النكهات العربية والبخارية الأصيلة للعائلات في البحرين مع وجبات عالية الجودة وخدمة سريعة وكميات سخية."
+    >
+      Mohammed Noor Bukhari Restaurant brings authentic Arabic and Bukhari flavours to families across Bahrain with quality meals, fast service and generous portions.
+    </p>
+
+    <a
+      class="btn btn-primary"
+      href="https://linktr.ee/mnbkrest"
+      target="_blank"
+      rel="noopener"
+      data-en="View All Links"
+      data-ar="عرض جميع الروابط"
+    >
+      View All Links
+    </a>
+  </div>
 </section>
+
+<section id="contact" class="order-section">
+  <img src="logo.png" alt="Mohammed Noor Bukhari Logo" />
+
+  <h2 data-en="Ready to Order?" data-ar="جاهز للطلب؟">
+    Ready to Order?
+  </h2>
+
+  <p
+    data-en="Enjoy your favourite Bukhari dishes from the nearest branch."
+    data-ar="استمتع بأطباقك البخارية المفضلة من أقرب فرع."
+  >
+    Enjoy your favourite Bukhari dishes from the nearest branch.
+  </p>
+
+  <div class="order-actions">
+    <a
+      class="btn btn-primary"
+      href="https://www.talabat.com/bahrain/mohammed-noor-bukhari-hoora"
+      target="_blank"
+      rel="noopener"
+      data-en="Order on Talabat"
+      data-ar="اطلب عبر طلبات"
+    >
+      Order on Talabat
+    </a>
+
+    <a
+      class="btn btn-outline-dark"
+      href="https://linktr.ee/mnbkrest"
+      target="_blank"
+      rel="noopener"
+      data-en="Branch Links"
+      data-ar="روابط الفروع"
+    >
+      Branch Links
+    </a>
+  </div>
+</section>
+
+</main>
+
+<div class="mobile-bottom-bar">
+  <a
+    href="https://www.talabat.com/bahrain/mohammed-noor-bukhari-hoora"
+    target="_blank"
+    rel="noopener"
+    data-en="Order"
+    data-ar="اطلب"
+  >
+    Order
+  </a>
+
+  <a href="#branches" data-en="Branches" data-ar="الفروع">
+    Branches
+  </a>
+
+  <button type="button" onclick="toggleLanguage()">AR / EN</button>
+</div>
 
 <footer>
   <p>© 2026 Mohammed Noor Bukhari Restaurant Bahrain</p>
