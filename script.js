@@ -1,9 +1,22 @@
 const FRAME_COUNT = 120;
-const FRAME_FOLDER = "sequence";
+
+const DESKTOP_FRAME_FOLDER = "sequence";
+const MOBILE_FRAME_FOLDER = "sequrnce-mobile";
+
 const FRAME_PREFIX = "frame_";
 const FRAME_EXTENSION = "webp";
 const FRAME_START = 1;
 const FRAME_PAD = 4;
+
+/*
+  Mobile image fit:
+  "contain" = shows the full mobile image without cropping.
+  "cover" = fills the full phone screen, but crops if your frames are landscape.
+
+  Keep this as "contain" for your current sequrnce-mobile images.
+  If you later make portrait mobile frames, change it to "cover".
+*/
+const MOBILE_IMAGE_FIT = "contain";
 
 const BACKGROUND_COLOR = "#050505";
 const SPRING_STIFFNESS = 100;
@@ -39,6 +52,10 @@ let lastTime = performance.now();
 
 let rafId = 0;
 let isSequenceReady = false;
+let activeFrameFolder = "";
+let activeLoadToken = 0;
+
+const sequenceCache = new Map();
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -54,6 +71,10 @@ function padFrameNumber(value) {
 
 function formatCounterNumber(value) {
   return String(value).padStart(3, "0");
+}
+
+function getActiveFrameFolder() {
+  return mobileQuery.matches ? MOBILE_FRAME_FOLDER : DESKTOP_FRAME_FOLDER;
 }
 
 function toggleMenu() {
@@ -103,10 +124,10 @@ window.toggleMenu = toggleMenu;
 window.closeMenu = closeMenu;
 window.toggleLanguage = toggleLanguage;
 
-function getSequenceSources() {
+function getSequenceSources(folder) {
   return Array.from({ length: FRAME_COUNT }, (_, index) => {
     const frameNumber = FRAME_START + index;
-    return `${FRAME_FOLDER}/${FRAME_PREFIX}${padFrameNumber(frameNumber)}.${FRAME_EXTENSION}`;
+    return `${folder}/${FRAME_PREFIX}${padFrameNumber(frameNumber)}.${FRAME_EXTENSION}`;
   });
 }
 
@@ -120,6 +141,25 @@ function updateLoaderProgress(loadedCount, totalCount) {
   if (progressText) {
     progressText.textContent = `${percentage}%`;
   }
+}
+
+function showLoader() {
+  if (loader) {
+    loader.classList.remove("is-hidden");
+  }
+
+  document.body.classList.add("is-loading");
+  updateLoaderProgress(0, FRAME_COUNT);
+}
+
+function hideLoader() {
+  window.setTimeout(() => {
+    if (loader) {
+      loader.classList.add("is-hidden");
+    }
+
+    document.body.classList.remove("is-loading");
+  }, 350);
 }
 
 function loadImage(src) {
@@ -149,7 +189,7 @@ function loadImage(src) {
   });
 }
 
-async function preloadImages(sources) {
+async function preloadImages(sources, loadToken) {
   let completed = 0;
 
   const results = await Promise.all(
@@ -157,7 +197,10 @@ async function preloadImages(sources) {
       const result = await loadImage(source);
 
       completed += 1;
-      updateLoaderProgress(completed, sources.length);
+
+      if (loadToken === activeLoadToken) {
+        updateLoaderProgress(completed, sources.length);
+      }
 
       return result;
     })
@@ -180,7 +223,9 @@ async function preloadImages(sources) {
 function resizeCanvas() {
   if (!canvas || !ctx) return;
 
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const dprLimit = mobileQuery.matches ? 1.5 : 2;
+  const dpr = Math.min(window.devicePixelRatio || 1, dprLimit);
+
   const width = Math.max(1, window.innerWidth);
   const height = Math.max(1, window.innerHeight);
 
@@ -217,6 +262,54 @@ function getFrameIndex(progress) {
   return clamp(index, 0, loadedFrames.length - 1);
 }
 
+function getDrawBox(image, width, height) {
+  const imageRatio = image.naturalWidth / image.naturalHeight;
+  const canvasRatio = width / height;
+
+  let drawWidth;
+  let drawHeight;
+
+  const shouldContainOnMobile = mobileQuery.matches && MOBILE_IMAGE_FIT === "contain";
+
+  if (shouldContainOnMobile) {
+    /*
+      Mobile contain mode:
+      Shows the full frame without cropping or zooming too much.
+      This is best for your current landscape mobile sequence.
+    */
+    if (imageRatio > canvasRatio) {
+      drawWidth = width;
+      drawHeight = width / imageRatio;
+    } else {
+      drawHeight = height;
+      drawWidth = height * imageRatio;
+    }
+  } else {
+    /*
+      Cover mode:
+      Fills the full canvas like background-size: cover.
+      Use this for desktop or for proper portrait mobile frames.
+    */
+    if (imageRatio > canvasRatio) {
+      drawHeight = height;
+      drawWidth = height * imageRatio;
+    } else {
+      drawWidth = width;
+      drawHeight = width / imageRatio;
+    }
+  }
+
+  const x = (width - drawWidth) / 2;
+  const y = (height - drawHeight) / 2;
+
+  return {
+    x,
+    y,
+    drawWidth,
+    drawHeight
+  };
+}
+
 function drawFrame(index) {
   if (!ctx || !canvas || !loadedFrames.length || !loadedFrames[index]) return;
 
@@ -235,28 +328,9 @@ function drawFrame(index) {
   ctx.fillStyle = BACKGROUND_COLOR;
   ctx.fillRect(0, 0, width, height);
 
-  const imageRatio = image.naturalWidth / image.naturalHeight;
-  const canvasRatio = width / height;
+  const box = getDrawBox(image, width, height);
 
-  let drawWidth;
-  let drawHeight;
-
-  /**
-   * Cover behavior:
-   * fills the full screen like background-size: cover.
-   */
-  if (imageRatio > canvasRatio) {
-    drawHeight = height;
-    drawWidth = height * imageRatio;
-  } else {
-    drawWidth = width;
-    drawHeight = width / imageRatio;
-  }
-
-  const x = (width - drawWidth) / 2;
-  const y = (height - drawHeight) / 2;
-
-  ctx.drawImage(image, x, y, drawWidth, drawHeight);
+  ctx.drawImage(image, box.x, box.y, box.drawWidth, box.drawHeight);
 
   ctx.restore();
 
@@ -356,51 +430,83 @@ function animationLoop(now) {
   rafId = requestAnimationFrame(animationLoop);
 }
 
-async function initSequence() {
-  if (!canvas || !ctx || !sequenceScroll) return;
+function applyLoadedSequence(folder, sequenceImages) {
+  loadedFrames = sequenceImages;
+  activeFrameFolder = folder;
+  isSequenceReady = true;
+  activeFrame = -1;
 
-  document.body.classList.add("is-loading");
+  if (frameTotal) {
+    frameTotal.textContent = formatCounterNumber(loadedFrames.length);
+  }
 
   resizeCanvas();
-  updateLoaderProgress(0, FRAME_COUNT);
+  updateStoryBeats(springProgress);
+  updateScrollHint(springProgress);
+  drawFrame(getFrameIndex(springProgress));
+}
 
-  const sequenceImages = await preloadImages(getSequenceSources());
+async function loadActiveSequence() {
+  if (!canvas || !ctx || !sequenceScroll) return;
+
+  const folder = getActiveFrameFolder();
+
+  if (folder === activeFrameFolder && loadedFrames.length) {
+    resizeCanvas();
+    return;
+  }
+
+  activeLoadToken += 1;
+  const loadToken = activeLoadToken;
+
+  isSequenceReady = false;
+  loadedFrames = [];
+  activeFrame = -1;
+
+  showLoader();
+  resizeCanvas();
+
+  const cachedFrames = sequenceCache.get(folder);
+
+  if (cachedFrames && cachedFrames.length) {
+    if (loadToken !== activeLoadToken) return;
+
+    applyLoadedSequence(folder, cachedFrames);
+    hideLoader();
+    return;
+  }
+
+  const sequenceImages = await preloadImages(getSequenceSources(folder), loadToken);
+
+  if (loadToken !== activeLoadToken) {
+    return;
+  }
 
   if (!sequenceImages.length) {
     console.error(
-      "No sequence frames loaded. Your files must be named like sequence/frame_0001.png, sequence/frame_0002.png, etc."
+      `No sequence frames loaded. Check folder and file names: ${folder}/frame_0001.webp, ${folder}/frame_0002.webp, etc.`
     );
 
     if (loader) {
       const loaderText = loader.querySelector("p");
 
       if (loaderText) {
-        loaderText.textContent = "Frames not found. Check sequence folder names.";
+        loaderText.textContent = `Frames not found in ${folder}`;
       }
     }
 
     return;
   }
 
-  loadedFrames = sequenceImages;
+  sequenceCache.set(folder, sequenceImages);
+  applyLoadedSequence(folder, sequenceImages);
+  hideLoader();
+}
 
-  if (frameTotal) {
-    frameTotal.textContent = formatCounterNumber(loadedFrames.length);
-  }
+async function initSequence() {
+  if (!canvas || !ctx || !sequenceScroll) return;
 
-  isSequenceReady = true;
-
-  resizeCanvas();
-  updateStoryBeats(0);
-  updateScrollHint(0);
-
-  window.setTimeout(() => {
-    if (loader) {
-      loader.classList.add("is-hidden");
-    }
-
-    document.body.classList.remove("is-loading");
-  }, 350);
+  await loadActiveSequence();
 }
 
 function onResize() {
@@ -408,9 +514,25 @@ function onResize() {
   updateTargetProgress();
 }
 
+function onBreakpointChange() {
+  const newFolder = getActiveFrameFolder();
+
+  if (newFolder !== activeFrameFolder) {
+    loadActiveSequence();
+  } else {
+    onResize();
+  }
+}
+
 function bindEvents() {
   window.addEventListener("resize", onResize, { passive: true });
-  window.addEventListener("orientationchange", onResize, { passive: true });
+  window.addEventListener("orientationchange", onBreakpointChange, { passive: true });
+
+  if (typeof mobileQuery.addEventListener === "function") {
+    mobileQuery.addEventListener("change", onBreakpointChange);
+  } else if (typeof mobileQuery.addListener === "function") {
+    mobileQuery.addListener(onBreakpointChange);
+  }
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
@@ -427,7 +549,13 @@ function cleanup() {
   cancelAnimationFrame(rafId);
 
   window.removeEventListener("resize", onResize);
-  window.removeEventListener("orientationchange", onResize);
+  window.removeEventListener("orientationchange", onBreakpointChange);
+
+  if (typeof mobileQuery.removeEventListener === "function") {
+    mobileQuery.removeEventListener("change", onBreakpointChange);
+  } else if (typeof mobileQuery.removeListener === "function") {
+    mobileQuery.removeListener(onBreakpointChange);
+  }
 
   if (ctx && canvas) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
