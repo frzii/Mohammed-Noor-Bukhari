@@ -1,6 +1,13 @@
 const FRAME_COUNT = 120;
 
 const DESKTOP_FRAME_FOLDER = "sequence";
+
+/*
+  Important:
+  Your old code used "sequrnce-mobile".
+  If your actual folder is really named "sequrnce-mobile", keep it.
+  If your folder is named "sequence-mobile", change this value.
+*/
 const MOBILE_FRAME_FOLDER = "sequrnce-mobile";
 
 const FRAME_PREFIX = "frame_";
@@ -8,19 +15,33 @@ const FRAME_EXTENSION = "webp";
 const FRAME_START = 1;
 const FRAME_PAD = 4;
 
-/*
-  Mobile image fit:
-  "contain" = shows the full mobile image without cropping.
-  "cover" = fills the full phone screen, but crops if your frames are landscape.
-
-  Keep this as "contain" for your current sequrnce-mobile images.
-  If you later make portrait mobile frames, change it to "cover".
-*/
 const MOBILE_IMAGE_FIT = "contain";
 
 const BACKGROUND_COLOR = "#050505";
-const SPRING_STIFFNESS = 100;
-const SPRING_DAMPING = 30;
+
+/*
+  More responsive spring.
+  If you want it even more direct, increase stiffness to 220–260.
+*/
+const SPRING_STIFFNESS = 180;
+const SPRING_DAMPING = 24;
+
+/*
+  Lower DPR = much smoother canvas drawing.
+  This is one of the biggest fixes.
+*/
+const DESKTOP_DPR_LIMIT = 1.25;
+const MOBILE_DPR_LIMIT = 1;
+
+/*
+  Do not decode/load all 120 images at the exact same time.
+*/
+const PRELOAD_CONCURRENCY = 6;
+
+/*
+  Avoid updating text/DOM styles on every tiny progress change.
+*/
+const UI_PROGRESS_UPDATE_THRESHOLD = 0.0015;
 
 let currentLang = localStorage.getItem("mnbk-language") || "en";
 
@@ -54,6 +75,10 @@ let rafId = 0;
 let isSequenceReady = false;
 let activeFrameFolder = "";
 let activeLoadToken = 0;
+
+let sequenceTop = 0;
+let sequenceScrollableDistance = 1;
+let lastUiProgress = -1;
 
 const sequenceCache = new Map();
 
@@ -169,7 +194,16 @@ function loadImage(src) {
     image.decoding = "async";
     image.loading = "eager";
 
-    image.onload = () => {
+    image.onload = async () => {
+      try {
+        if (image.decode) {
+          await image.decode();
+        }
+      } catch (error) {
+        // Some browsers may throw here even after onload.
+        // We still allow the image to be used.
+      }
+
       resolve({
         image,
         ok: true,
@@ -191,22 +225,33 @@ function loadImage(src) {
 
 async function preloadImages(sources, loadToken) {
   let completed = 0;
+  let nextIndex = 0;
+  const results = new Array(sources.length);
 
-  const results = await Promise.all(
-    sources.map(async (source) => {
-      const result = await loadImage(source);
+  async function worker() {
+    while (nextIndex < sources.length) {
+      const index = nextIndex;
+      nextIndex += 1;
+
+      results[index] = await loadImage(sources[index]);
 
       completed += 1;
 
       if (loadToken === activeLoadToken) {
         updateLoaderProgress(completed, sources.length);
       }
+    }
+  }
 
-      return result;
-    })
+  const workerCount = Math.min(PRELOAD_CONCURRENCY, sources.length);
+
+  await Promise.all(
+    Array.from({ length: workerCount }, () => worker())
   );
 
-  const failedFrames = results.filter((result) => !result.ok).map((result) => result.src);
+  const failedFrames = results
+    .filter((result) => !result.ok)
+    .map((result) => result.src);
 
   if (failedFrames.length > 0) {
     console.warn(
@@ -223,36 +268,65 @@ async function preloadImages(sources, loadToken) {
 function resizeCanvas() {
   if (!canvas || !ctx) return;
 
-  const dprLimit = mobileQuery.matches ? 1.5 : 2;
+  const dprLimit = mobileQuery.matches ? MOBILE_DPR_LIMIT : DESKTOP_DPR_LIMIT;
   const dpr = Math.min(window.devicePixelRatio || 1, dprLimit);
 
-  const width = Math.max(1, window.innerWidth);
-  const height = Math.max(1, window.innerHeight);
+  const cssWidth = Math.max(1, window.innerWidth);
+  const cssHeight = Math.max(1, window.innerHeight);
 
-  canvasWidth = Math.floor(width * dpr);
-  canvasHeight = Math.floor(height * dpr);
+  const nextCanvasWidth = Math.floor(cssWidth * dpr);
+  const nextCanvasHeight = Math.floor(cssHeight * dpr);
+
+  const sizeChanged =
+    canvasWidth !== nextCanvasWidth ||
+    canvasHeight !== nextCanvasHeight;
+
+  canvas.style.width = `${cssWidth}px`;
+  canvas.style.height = `${cssHeight}px`;
+
+  if (!sizeChanged) {
+    drawFrame(getFrameIndex(springProgress));
+    return;
+  }
+
+  canvasWidth = nextCanvasWidth;
+  canvasHeight = nextCanvasHeight;
 
   canvas.width = canvasWidth;
   canvas.height = canvasHeight;
 
-  canvas.style.width = `${width}px`;
-  canvas.style.height = `${height}px`;
-
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
+  ctx.imageSmoothingQuality = "medium";
 
   activeFrame = -1;
   drawFrame(getFrameIndex(springProgress));
 }
 
-function getScrollProgress() {
-  if (!sequenceScroll) return 0;
+function measureSequenceScroll() {
+  if (!sequenceScroll) return;
 
   const rect = sequenceScroll.getBoundingClientRect();
-  const scrollableDistance = Math.max(1, sequenceScroll.offsetHeight - window.innerHeight);
 
-  return clamp(-rect.top / scrollableDistance, 0, 1);
+  sequenceTop = rect.top + window.scrollY;
+  sequenceScrollableDistance = Math.max(
+    1,
+    sequenceScroll.offsetHeight - window.innerHeight
+  );
+
+  updateTargetProgress();
+}
+
+function getScrollProgress() {
+  return clamp(
+    (window.scrollY - sequenceTop) / sequenceScrollableDistance,
+    0,
+    1
+  );
+}
+
+function updateTargetProgress() {
+  targetProgress = getScrollProgress();
 }
 
 function getFrameIndex(progress) {
@@ -272,11 +346,6 @@ function getDrawBox(image, width, height) {
   const shouldContainOnMobile = mobileQuery.matches && MOBILE_IMAGE_FIT === "contain";
 
   if (shouldContainOnMobile) {
-    /*
-      Mobile contain mode:
-      Shows the full frame without cropping or zooming too much.
-      This is best for your current landscape mobile sequence.
-    */
     if (imageRatio > canvasRatio) {
       drawWidth = width;
       drawHeight = width / imageRatio;
@@ -285,11 +354,6 @@ function getDrawBox(image, width, height) {
       drawWidth = height * imageRatio;
     }
   } else {
-    /*
-      Cover mode:
-      Fills the full canvas like background-size: cover.
-      Use this for desktop or for proper portrait mobile frames.
-    */
     if (imageRatio > canvasRatio) {
       drawHeight = height;
       drawWidth = height * imageRatio;
@@ -313,7 +377,7 @@ function getDrawBox(image, width, height) {
 function drawFrame(index) {
   if (!ctx || !canvas || !loadedFrames.length || !loadedFrames[index]) return;
 
-  if (index === activeFrame && canvas.width === canvasWidth && canvas.height === canvasHeight) {
+  if (index === activeFrame) {
     return;
   }
 
@@ -322,8 +386,6 @@ function drawFrame(index) {
   const width = canvas.width;
   const height = canvas.height;
 
-  ctx.save();
-
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.fillStyle = BACKGROUND_COLOR;
   ctx.fillRect(0, 0, width, height);
@@ -331,8 +393,6 @@ function drawFrame(index) {
   const box = getDrawBox(image, width, height);
 
   ctx.drawImage(image, box.x, box.y, box.drawWidth, box.drawHeight);
-
-  ctx.restore();
 
   activeFrame = index;
 
@@ -386,8 +446,8 @@ function updateStoryBeats(progress) {
     beat.style.opacity = state.opacity.toFixed(3);
 
     beat.style.transform = shouldCenter
-      ? `translate(-50%, ${state.y.toFixed(2)}px)`
-      : `translateY(${state.y.toFixed(2)}px)`;
+      ? `translate3d(-50%, ${state.y.toFixed(2)}px, 0)`
+      : `translate3d(0, ${state.y.toFixed(2)}px, 0)`;
 
     beat.style.pointerEvents = state.opacity > 0.8 ? "auto" : "none";
   });
@@ -400,15 +460,20 @@ function updateScrollHint(progress) {
   scrollHint.style.opacity = opacity.toFixed(3);
 }
 
-function updateTargetProgress() {
-  targetProgress = getScrollProgress();
+function updateUi(progress) {
+  if (Math.abs(progress - lastUiProgress) < UI_PROGRESS_UPDATE_THRESHOLD) {
+    return;
+  }
+
+  updateStoryBeats(progress);
+  updateScrollHint(progress);
+
+  lastUiProgress = progress;
 }
 
 function animationLoop(now) {
   const delta = clamp((now - lastTime) / 1000, 0, 0.05);
   lastTime = now;
-
-  updateTargetProgress();
 
   if (reducedMotionQuery.matches) {
     springProgress = targetProgress;
@@ -423,8 +488,7 @@ function animationLoop(now) {
 
   if (isSequenceReady) {
     drawFrame(getFrameIndex(springProgress));
-    updateStoryBeats(springProgress);
-    updateScrollHint(springProgress);
+    updateUi(springProgress);
   }
 
   rafId = requestAnimationFrame(animationLoop);
@@ -435,12 +499,15 @@ function applyLoadedSequence(folder, sequenceImages) {
   activeFrameFolder = folder;
   isSequenceReady = true;
   activeFrame = -1;
+  lastUiProgress = -1;
 
   if (frameTotal) {
     frameTotal.textContent = formatCounterNumber(loadedFrames.length);
   }
 
   resizeCanvas();
+  measureSequenceScroll();
+
   updateStoryBeats(springProgress);
   updateScrollHint(springProgress);
   drawFrame(getFrameIndex(springProgress));
@@ -453,6 +520,7 @@ async function loadActiveSequence() {
 
   if (folder === activeFrameFolder && loadedFrames.length) {
     resizeCanvas();
+    measureSequenceScroll();
     return;
   }
 
@@ -462,9 +530,11 @@ async function loadActiveSequence() {
   isSequenceReady = false;
   loadedFrames = [];
   activeFrame = -1;
+  lastUiProgress = -1;
 
   showLoader();
   resizeCanvas();
+  measureSequenceScroll();
 
   const cachedFrames = sequenceCache.get(folder);
 
@@ -506,12 +576,13 @@ async function loadActiveSequence() {
 async function initSequence() {
   if (!canvas || !ctx || !sequenceScroll) return;
 
+  measureSequenceScroll();
   await loadActiveSequence();
 }
 
 function onResize() {
   resizeCanvas();
-  updateTargetProgress();
+  measureSequenceScroll();
 }
 
 function onBreakpointChange() {
@@ -525,8 +596,10 @@ function onBreakpointChange() {
 }
 
 function bindEvents() {
+  window.addEventListener("scroll", updateTargetProgress, { passive: true });
   window.addEventListener("resize", onResize, { passive: true });
   window.addEventListener("orientationchange", onBreakpointChange, { passive: true });
+  window.addEventListener("load", measureSequenceScroll, { once: true });
 
   if (typeof mobileQuery.addEventListener === "function") {
     mobileQuery.addEventListener("change", onBreakpointChange);
@@ -534,28 +607,34 @@ function bindEvents() {
     mobileQuery.addListener(onBreakpointChange);
   }
 
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      closeMenu();
-    }
-  });
+  document.addEventListener("keydown", handleKeydown);
 
   document.querySelectorAll(".mobile-menu a").forEach((link) => {
     link.addEventListener("click", closeMenu);
   });
 }
 
+function handleKeydown(event) {
+  if (event.key === "Escape") {
+    closeMenu();
+  }
+}
+
 function cleanup() {
   cancelAnimationFrame(rafId);
 
+  window.removeEventListener("scroll", updateTargetProgress);
   window.removeEventListener("resize", onResize);
   window.removeEventListener("orientationchange", onBreakpointChange);
+  window.removeEventListener("load", measureSequenceScroll);
 
   if (typeof mobileQuery.removeEventListener === "function") {
     mobileQuery.removeEventListener("change", onBreakpointChange);
   } else if (typeof mobileQuery.removeListener === "function") {
     mobileQuery.removeListener(onBreakpointChange);
   }
+
+  document.removeEventListener("keydown", handleKeydown);
 
   if (ctx && canvas) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
